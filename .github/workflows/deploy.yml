@@ -47,7 +47,7 @@ jobs:
       env:
         LD_LIBRARY_PATH: /opt/rh/devtoolset-8/root/usr/lib64:/opt/rh/devtoolset-8/root/usr/lib:/opt/rh/devtoolset-8/root/usr/lib64/dyninst:/opt/rh/devtoolset-8/root/usr/lib/dyninst:/usr/local/lib64:/usr/local/lib
     - name: Build Manylinux Wheels (py3)
-      uses: newrelic-forks/python-wheels-manylinux-build@v0.3.4-manylinux2010_x86_64
+      uses: RalfG/python-wheels-manylinux-build@f7c9db24751e53d2d3c90edc2b04a9ffaa96cd01
       with:
         python-versions: 'cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39'
       env:
