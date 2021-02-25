@@ -41,7 +41,7 @@ jobs:
     - name: Build Source Package
       run: python setup.py sdist
     - name: Build Manylinux Wheels (py2)
-      uses: newrelic-forks/python-wheels-manylinux-build@v0.3.4-manylinux2010_x86_64:2021-02-06-3d322a5
+      uses: newrelic-forks/python-wheels-manylinux-build@v0.3.4-manylinux2010_x86_64-2021-02-06-3d322a5
       with:
         python-versions: 'cp27-cp27m'
       env:
