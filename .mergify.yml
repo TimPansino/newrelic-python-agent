@@ -1,0 +1,16 @@
+# For condition grammar see: https://docs.mergify.com/conditions/#grammar
+pull_request_rules:
+  - name: Automatic merge on approval
+    conditions:
+      #- "#approved-reviews-by>=1"
+      # Never auto-merge develop branches
+      - "-head~=^develop"
+      # Never auto-merge drafts
+      - "-draft"
+      # Ensure tests are passing
+      - "check-success=tests"
+      # Require label
+      - "label=ready-to-merge"
+    actions:
+      merge:
+        method: squash
