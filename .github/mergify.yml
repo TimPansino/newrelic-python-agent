@@ -9,7 +9,6 @@ pull_request_rules:
       - "base=main"  # Filter branches by name
     actions:
       queue:
-        name: main
         method: squash
   
   - name: develop branches - Automatic merge on approval
@@ -20,7 +19,6 @@ pull_request_rules:
       - "base~=^develop"  # Filter branches by name
     actions:
       queue:
-        name: develop
         method: squash
         
   - name: Automatic PR branch updates
@@ -36,12 +34,7 @@ pull_request_rules:
       delete_head_branch:
 
 queue_rules:
-  - name: main
-    conditions:
-      #- "#approved-reviews-by>=1"
-      - "label=ready-to-merge"
-
-  - name: develop
+  - name: default
     conditions:
       #- "#approved-reviews-by>=1"
       - "label=ready-to-merge"
