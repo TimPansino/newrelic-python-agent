@@ -43,6 +43,24 @@ pull_request_rules:
         remove:
           - "ready-to-merge"
 
+  - name: Add label on test failures
+    conditions:
+      - or:
+        - check-failure=tests
+        - check-skipped=tests
+    actions:
+      label:
+        add:
+          - "tests-failing"
+
+  - name: Remove label on test success
+    conditions:
+      - check-success=tests
+    actions:
+      label:
+        remove:
+          - "tests-failing"
+
   - name: Toggle label on test failures
     conditions:
       - or:
