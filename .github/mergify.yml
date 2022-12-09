@@ -61,16 +61,6 @@ pull_request_rules:
         remove:
           - "tests-failing"
 
-  - name: Toggle label on test failures
-    conditions:
-      - or:
-        - check-failure=tests
-        - check-skipped=tests
-    actions:
-      label:
-        toggle:
-          - "tests-failing"
-
   - name: Toggle label on merge conflicts
     conditions:
       - conflict
