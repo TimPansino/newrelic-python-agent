@@ -1,16 +1,41 @@
 # For condition grammar see: https://docs.mergify.com/conditions/#grammar
+
 pull_request_rules:
-  - name: Automatic merge on approval
+  - name: main - Automatic merge on approval
     conditions:
       #- "#approved-reviews-by>=1"
-      # Never auto-merge develop branches
-      - "-head~=^develop"
-      # Never auto-merge drafts
-      - "-draft"
-      # Ensure tests are passing
-      - "check-success=tests"
-      # Require label
-      - "label=ready-to-merge"
+      - "-draft"  # Never queue up drafts
+      - "label=ready-to-merge"  # Require label
+      - "base=main"  # Filter branches by name
     actions:
-      merge:
+      queue:
+        name: main
         method: squash
+  
+  - name: develop branches - Automatic merge on approval
+    conditions:
+      #- "#approved-reviews-by>=1"
+      - "-draft"  # Never queue up drafts
+      - "label=ready-to-merge"  # Require label
+      - "base~=^develop"  # Filter branches by name
+    actions:
+      queue:
+        name: develop
+        method: squash
+        
+  - name: Automatic PR branch updates
+    conditions:
+      - "queue-position=-1"  # Not queued
+    actions:
+      update:
+
+queue_rules:
+  - name: main
+    conditions:
+      #- "#approved-reviews-by>=1"
+      - "label=ready-to-merge"
+
+  - name: develop
+    conditions:
+      #- "#approved-reviews-by>=1"
+      - "label=ready-to-merge"
