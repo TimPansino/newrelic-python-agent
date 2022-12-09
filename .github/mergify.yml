@@ -5,9 +5,10 @@ queue_rules:
     conditions:
       #- "#approved-reviews-by>=1"
       - "label=ready-to-merge"
+      - "check-success=tests"
 
 pull_request_rules:
-  - name: main - Automatic merge on approval
+  - name: main - Add to merge queue on approval
     conditions:
       #- "#approved-reviews-by>=1"
       - "-draft"  # Never queue up drafts
@@ -17,7 +18,7 @@ pull_request_rules:
       queue:
         method: squash
 
-  - name: develop branches - Automatic merge on approval
+  - name: develop branches - Add to merge queue on approval
     conditions:
       #- "#approved-reviews-by>=1"
       - "-draft"  # Never queue up drafts
@@ -44,7 +45,9 @@ pull_request_rules:
 
   - name: Toggle label on test failures
     conditions:
-      - check-failure=tests
+      - or:
+        - check-failure=tests
+        - check-skipped=tests
     actions:
       label:
         toggle:
