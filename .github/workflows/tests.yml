@@ -62,6 +62,7 @@ jobs:
 
       - name: Test
         run: |
+          exit 1
           tox -vv -e ${{ steps.get-envs.outputs.envs }} -p auto
         env:
           TOX_PARALLEL_NO_SPINNER: 1
