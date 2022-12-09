@@ -1,5 +1,11 @@
 # For condition grammar see: https://docs.mergify.com/conditions/#grammar
 
+queue_rules:
+  - name: default
+    conditions:
+      #- "#approved-reviews-by>=1"
+      - "label=ready-to-merge"
+
 pull_request_rules:
   - name: main - Automatic merge on approval
     conditions:
@@ -10,7 +16,7 @@ pull_request_rules:
     actions:
       queue:
         method: squash
-  
+
   - name: develop branches - Automatic merge on approval
     conditions:
       #- "#approved-reviews-by>=1"
@@ -20,21 +26,34 @@ pull_request_rules:
     actions:
       queue:
         method: squash
-        
+
   - name: Automatic PR branch updates
     conditions:
       - "queue-position=-1"  # Not queued
     actions:
       update:
-      
-  - name: Delete PR head branch after merge
+
+  - name: Clean up after merge
     conditions:
       - merged
     actions:
       delete_head_branch:
+      label:
+        remove:
+          - "ready-to-merge"
 
-queue_rules:
-  - name: default
+  - name: Toggle label on test failures
     conditions:
-      #- "#approved-reviews-by>=1"
-      - "label=ready-to-merge"
+      - check-failure=tests
+    actions:
+      label:
+        toggle:
+          - "tests-failing"
+
+  - name: Toggle label on merge conflicts
+    conditions:
+      - conflict
+    actions:
+      label:
+        toggle:
+          - "merge-conflicts"
