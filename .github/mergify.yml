@@ -3,7 +3,7 @@
 shared:
   conditions:
     - and: &pr_ready_checks
-      - "#approved-reviews-by>=1"  # A '#' pulls the length of the underlying list
+      # - "#approved-reviews-by>=1"  # A '#' pulls the length of the underlying list
       - "label=ready-to-merge"
       - "check-success=tests"
 
