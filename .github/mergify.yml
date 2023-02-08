@@ -1,32 +1,47 @@
 # For condition grammar see: https://docs.mergify.com/conditions/#grammar
 
-queue_rules:
-  - name: default
-    conditions:
-      #- "#approved-reviews-by>=1"
+shared:
+  conditions:
+    - and: &pr_ready_checks
+      - "#approved-reviews-by>=1"  # A '#' pulls the length of the underlying list
       - "label=ready-to-merge"
       - "check-success=tests"
 
-pull_request_rules:
-  - name: main - Add to merge queue on approval
+queue_rules:
+  - name: default
     conditions:
-      #- "#approved-reviews-by>=1"
-      - "-draft"  # Never queue up drafts
-      - "label=ready-to-merge"  # Require label
-      - "base=main"  # Filter branches by name
-    actions:
-      queue:
-        method: squash
+      - and: *pr_ready_checks
 
-  - name: develop branches - Add to merge queue on approval
+pull_request_rules:
+  - name: main branch PRs - Add to merge queue on approval
     conditions:
-      #- "#approved-reviews-by>=1"
-      - "-draft"  # Never queue up drafts
-      - "label=ready-to-merge"  # Require label
-      - "base~=^develop"  # Filter branches by name
+      - and: *pr_ready_checks
+      - "base=main"  # Only branches that target main
+      - "-head~=^develop"  # Don't include develop branches
     actions:
       queue:
         method: squash
+        priority: medium
+
+  - name: main branch PRs from develop branches - Add to merge queue on approval without squashing
+    conditions:
+      - and: *pr_ready_checks
+      - "base=main"  # Only branches that target main
+      - "-head~=^develop"  # Don't include develop branches
+    actions:
+      queue:
+        method: rebase
+        priority: high
+
+  - name: develop branch PRs - Add to merge queue on approval
+    conditions:
+      - and: *pr_ready_checks
+      - "base~=^develop"  # Filter branches by name
+      - "-head~=^develop"  # Don't include develop branches
+    actions:
+      queue:
+        method: squash
+        priority: medium
 
   - name: Automatic PR branch updates
     conditions:
@@ -41,8 +56,19 @@ pull_request_rules:
       delete_head_branch:
       label:
         remove:
+          - "merge-conflicts"
           - "ready-to-merge"
+          - "tests-failing"
 
+  - name: Toggle label on merge conflicts
+    conditions:
+      - conflict
+    actions:
+      label:
+        toggle:
+          - "merge-conflicts"
+
+  # Don't use a toggle for this, as the label constantly gets applied and removed when tests are rerun.
   - name: Add label on test failures
     conditions:
       - or:
@@ -60,11 +86,3 @@ pull_request_rules:
       label:
         remove:
           - "tests-failing"
-
-  - name: Toggle label on merge conflicts
-    conditions:
-      - conflict
-    actions:
-      label:
-        toggle:
-          - "merge-conflicts"
