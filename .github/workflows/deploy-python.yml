@@ -60,9 +60,10 @@ jobs:
         env:
           CIBW_PLATFORM: linux
           CIBW_BUILD: "${{ matrix.wheel }}*"
-          CIBW_ARCHS: x86_64
-          # CIBW_ARCHS: x86_64 aarch64
+          CIBW_ARCHS_LINUX: x86_64 aarch64
           CIBW_ENVIRONMENT: "LD_LIBRARY_PATH=/opt/rh/devtoolset-8/root/usr/lib64:/opt/rh/devtoolset-8/root/usr/lib:/opt/rh/devtoolset-8/root/usr/lib64/dyninst:/opt/rh/devtoolset-8/root/usr/lib/dyninst:/usr/local/lib64:/usr/local/lib"
+          CIBW_TEST_REQUIRES: pytest
+          CIBW_TEST_COMMAND: "export PYTHONPATH={project}/tests && pytest {project}/tests/agent_unittests -vx && pytest {project}/tests/agent_features -vx"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4.0.0
