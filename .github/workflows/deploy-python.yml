@@ -30,11 +30,21 @@ jobs:
       matrix:
         wheel:
           - cp37-manylinux*
+          # - cp37-musllinux*
           - cp38-manylinux*
+          # - cp38-musllinux*
           - cp39-manylinux*
+          # - cp39-musllinux*
           - cp310-manylinux*
+          # - cp310-musllinux*
           - cp311-manylinux*
+          # - cp311-musllinux*
           - cp312-manylinux*
+          # - cp312-musllinux*
+          # - pp37-manylinux*
+          # - pp38-manylinux*
+          # - pp39-manylinux*
+          # - pp310-manylinux*
 
     steps:
       - uses: actions/checkout@v3
@@ -45,7 +55,7 @@ jobs:
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v1
 
-      - name: Build Manylinux Wheels (Python 3)
+      - name: Build Wheels
         uses: pypa/cibuildwheel@v2.11.1
         env:
           CIBW_PLATFORM: linux
@@ -57,7 +67,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ github.job }}-${{ matrix.wheel }}
-          path: ./dist/*
+          path: ./wheelhouse/*
           retention-days: 1
 
   # deploy:
