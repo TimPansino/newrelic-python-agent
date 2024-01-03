@@ -29,15 +29,15 @@ jobs:
       fail-fast: false
       matrix:
         wheel:
-          - cp37-manylinux
-          # - cp37-musllinux
-          - cp38-manylinux
-          # - cp38-musllinux
-          - cp39-manylinux
-          # - cp39-musllinux
-          - cp310-manylinux
-          # - cp310-musllinux
-          - cp311-manylinux
+          # - cp37-manylinux
+          # # - cp37-musllinux
+          # - cp38-manylinux
+          # # - cp38-musllinux
+          # - cp39-manylinux
+          # # - cp39-musllinux
+          # - cp310-manylinux
+          # # - cp310-musllinux
+          # - cp311-manylinux
           # - cp311-musllinux
           - cp312-manylinux
           # - cp312-musllinux
@@ -62,7 +62,7 @@ jobs:
           CIBW_BUILD: "${{ matrix.wheel }}*"
           CIBW_ARCHS_LINUX: x86_64 aarch64
           CIBW_ENVIRONMENT: "LD_LIBRARY_PATH=/opt/rh/devtoolset-8/root/usr/lib64:/opt/rh/devtoolset-8/root/usr/lib:/opt/rh/devtoolset-8/root/usr/lib64/dyninst:/opt/rh/devtoolset-8/root/usr/lib/dyninst:/usr/local/lib64:/usr/local/lib"
-          CIBW_TEST_REQUIRES: pytest
+          CIBW_TEST_REQUIRES: pytest WebTest==2.0.35
           CIBW_TEST_COMMAND: "export PYTHONPATH={project}/tests && pytest {project}/tests/agent_unittests -vx && pytest {project}/tests/agent_features -vx"
 
       - name: Upload Artifacts
