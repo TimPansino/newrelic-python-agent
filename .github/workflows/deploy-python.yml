@@ -138,11 +138,6 @@ jobs:
       - build-sdist
 
     steps:
-      - name: Download Artifacts
-        uses: actions/download-artifact@v4.1.0
-        with:
-          path: ./dist/
-
       - uses: actions/setup-python@v2
         with:
           python-version: "3.x"
@@ -153,9 +148,18 @@ jobs:
           pip install -U pip
           pip install -U wheel setuptools twine
 
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4.1.0
+        with:
+          path: ./artifacts/
+
+      - name: Unpack Artifacts
+        run: |
+          mkdir -p dist/
+          mv artifacts/**/*{.whl,.tar.gz,.tar.gz.md5} dist/
+
       - name: LIST FILES
         run: |
-          ls
           ls dist/
 
       # - name: Upload Package to S3
