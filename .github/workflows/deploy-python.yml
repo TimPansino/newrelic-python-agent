@@ -134,7 +134,10 @@ jobs:
           retention-days: 1
 
   deploy:
-    needs: build-linux
+    needs: 
+      - build-linux-py3
+      - build-linux-py2
+      - build-sdist
     runs-on: ubuntu-latest
 
     steps:
