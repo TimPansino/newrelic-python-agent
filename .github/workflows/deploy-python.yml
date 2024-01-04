@@ -156,6 +156,11 @@ jobs:
           pip install -U pip
           pip install -U wheel setuptools twine
 
+      - name: LIST FILES
+        run: |
+          ls
+          ls dist/
+
       # - name: Upload Package to S3
       #   run: |
       #     tarball="$(python setup.py --fullname).tar.gz"
