@@ -113,6 +113,9 @@ jobs:
       - name: Build Source Package
         run: |
           python setup.py sdist
+
+      - name: Prepare MD5 Hash File
+        run: |
           tarball="$(python setup.py --fullname).tar.gz"
           md5_file=${tarball}.md5
           openssl md5 -binary dist/$tarball | xxd -p | tr -d '\n' > dist/$md5_file
@@ -129,11 +132,12 @@ jobs:
           retention-days: 1
 
   deploy:
+    runs-on: ubuntu-latest
+
     needs: 
       - build-linux-py3
       - build-linux-py2
       - build-sdist
-    runs-on: ubuntu-latest
 
     steps:
       - name: Download Artifacts
