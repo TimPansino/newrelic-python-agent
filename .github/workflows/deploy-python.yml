@@ -70,11 +70,6 @@ jobs:
 
   build-linux-py2:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: true
-      matrix:
-        wheel:
-          - cp27-manylinux_x86_64
 
     steps:
       - uses: actions/checkout@v3
@@ -89,7 +84,7 @@ jobs:
         uses: pypa/cibuildwheel@v1.12.0
         env:
           CIBW_PLATFORM: linux
-          CIBW_BUILD: "${{ matrix.wheel }}*"
+          CIBW_BUILD: cp27-manylinux_x86_64
           CIBW_ARCHS_LINUX: x86_64
           CIBW_ENVIRONMENT: "LD_LIBRARY_PATH=/opt/rh/devtoolset-8/root/usr/lib64:/opt/rh/devtoolset-8/root/usr/lib:/opt/rh/devtoolset-8/root/usr/lib64/dyninst:/opt/rh/devtoolset-8/root/usr/lib/dyninst:/usr/local/lib64:/usr/local/lib"
           CIBW_TEST_REQUIRES: pytest==4.6.11
@@ -98,7 +93,7 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4.0.0
         with:
-          name: ${{ github.job }}-${{ matrix.wheel }}
+          name: ${{ github.job }}
           path: ./wheelhouse/*.whl
           retention-days: 1
 
