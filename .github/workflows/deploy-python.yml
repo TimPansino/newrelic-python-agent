@@ -74,19 +74,6 @@ jobs:
               os: macos-14
             - wheel: cp312-macosx_arm64
               os: macos-14
-            # Windows
-            - wheel: cp37-win
-              os: windows-latest
-            - wheel: cp38-win
-              os: windows-latest
-            - wheel: cp39-win
-              os: windows-latest
-            - wheel: cp310-win
-              os: windows-latest
-            - wheel: cp311-win
-              os: windows-latest
-            - wheel: cp312-win
-              os: windows-latest
 
     name: Build wheels for ${{ matrix.wheel }}
     runs-on: ${{ matrix.os }}
@@ -110,12 +97,9 @@ jobs:
           CIBW_BUILD: "${{ matrix.wheel }}*"
           CIBW_ARCHS_LINUX: x86_64 aarch64
           CIBW_ARCHS_MACOS: native
-          CIBW_ARCHS_WINDOWS: AMD64 ARM64
           CIBW_ENVIRONMENT_LINUX: "LD_LIBRARY_PATH=/opt/rh/devtoolset-8/root/usr/lib64:/opt/rh/devtoolset-8/root/usr/lib:/opt/rh/devtoolset-8/root/usr/lib64/dyninst:/opt/rh/devtoolset-8/root/usr/lib/dyninst:/usr/local/lib64:/usr/local/lib"
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: "PYTHONPATH={project}/tests pytest {project}/tests/agent_unittests -vx"
-          # Windows ARM64 tests won't run when using cross compilation. Skip unless we can move to a native windows-arm runner.
-          CIBW_TEST_SKIP: "*-win_arm64"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # 4.3.1
