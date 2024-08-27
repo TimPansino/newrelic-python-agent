@@ -51,8 +51,6 @@ jobs:
             - wheel: cp312-musllinux
               os: ubuntu-latest
             # MacOS x86
-            - wheel: cp36-macosx_x86_64
-              os: macos-13
             - wheel: cp37-macosx_x86_64
               os: macos-13
             - wheel: cp38-macosx_x86_64
@@ -77,8 +75,6 @@ jobs:
             - wheel: cp312-macosx_arm64
               os: macos-14
             # Windows
-            - wheel: cp36-win
-              os: windows-latest
             - wheel: cp37-win
               os: windows-latest
             - wheel: cp38-win
