@@ -13,9 +13,9 @@
 # limitations under the License.
 
 import os
-import pwd
+import getpass
 
-USER = pwd.getpwuid(os.getuid()).pw_name
+USER = getpass.getuser()
 
 
 def postgresql_settings():

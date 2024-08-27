@@ -14,13 +14,27 @@
 
 from __future__ import print_function
 
-import os
-import pwd
 
 from newrelic.admin import command, usage
 from newrelic.common import agent_http, certs, encoding_utils
 from newrelic.config import initialize
 from newrelic.core.config import global_settings
+
+
+def fetch_username():
+    # Try pwd module first, to grab the human readable username comment field.
+    # Only available on Unix systems.
+    try:
+        import os
+        import pwd
+        user = pwd.getpwuid(os.getuid()).pw_gecos
+    except Exception:
+        pass
+    
+    # If that doesn't work, fall back to using getpass to grab the login name instead.
+    if not user:
+        import getpass
+        return getpass.getuser()
 
 
 def fetch_app_id(app_name, client, headers):
@@ -86,7 +100,7 @@ def record_deploy(
         path = "/v2/applications/{}/deployments.json".format(app_id)
 
         if user is None:
-            user = pwd.getpwuid(os.getuid()).pw_gecos
+            user = fetch_username()
 
         deployment = {}
         deployment["revision"] = revision
