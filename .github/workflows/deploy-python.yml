@@ -110,7 +110,7 @@ jobs:
       - name: Build Wheels
         uses: pypa/cibuildwheel@bd033a44476646b606efccdd5eed92d5ea1d77ad # 2.20.0
         env:
-          CIBW_PLATFORM: linux
+          CIBW_PLATFORM: auto
           CIBW_BUILD: "${{ matrix.wheel }}*"
           CIBW_ARCHS_LINUX: x86_64 aarch64
           CIBW_ARCHS_MACOS: native
