@@ -102,7 +102,10 @@ jobs:
           fetch-depth: 0
 
       - name: Setup QEMU
+        if: runner.os == 'Linux'
         uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # 3.0.0
+        with:
+          platforms: arm64
 
       - name: Build Wheels
         uses: pypa/cibuildwheel@bd033a44476646b606efccdd5eed92d5ea1d77ad # 2.20.0
@@ -135,7 +138,10 @@ jobs:
           fetch-depth: 0
 
       - name: Setup QEMU
+        if: runner.os == 'Linux'
         uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # 3.0.0
+        with:
+          platforms: arm64
 
       - name: Build Wheels
         uses: pypa/cibuildwheel@bf3a5590c9aeb9a7e4ff4025ef7400e0c6ad1248 # 1.12.0  (Last release to support Python 2)
