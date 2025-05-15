@@ -157,7 +157,7 @@ classifiers = [
 ]
 
 kwargs = dict(
-    name="newrelic",
+    name="tpansino-newrelic",
     use_scm_version={
         "version_scheme": newrelic_agent_next_version,
         "local_scheme": "no-local-version",
