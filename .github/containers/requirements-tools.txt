@@ -1,2 +1,2 @@
 ruff
-tox
+tox<4.26
