@@ -72,7 +72,6 @@ jobs:
           images: ${{ env.IMAGE_NAME }}
 
       - name: Login to GitHub Container Registry
-        if: github.event_name != 'pull_request'
         uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # 3.4.0
         with:
           registry: ghcr.io
