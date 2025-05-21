@@ -1,2 +1,3 @@
+pre-commit
 ruff
 tox<4.26
