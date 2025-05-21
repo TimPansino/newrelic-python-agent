@@ -37,6 +37,7 @@ concurrency:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - platform: linux/amd64
