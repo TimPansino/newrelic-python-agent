@@ -71,6 +71,7 @@ jobs:
           CIBW_TEST_COMMAND_WINDOWS: "set PYTHONPATH={project}/tests; pytest {project}/tests/agent_unittests -vx"
           # Windows ARM64 tests won't run when using cross compilation. Skip unless we can move to a native windows-arm runner.
           CIBW_TEST_SKIP: "*-win_arm64"
+          CIBW_BUILD_VERBOSITY: "1"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # 4.6.2
@@ -181,6 +182,7 @@ jobs:
           CIBW_TEST_COMMAND_WINDOWS: "set PYTHONPATH={project}/tests; pytest {project}/tests/agent_unittests -vx"
           # Windows ARM64 tests won't run when using cross compilation. Skip unless we can move to a native windows-arm runner.
           CIBW_TEST_SKIP: "*-win_arm64"
+          CIBW_BUILD_VERBOSITY: "1"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # 4.6.2
@@ -225,14 +227,13 @@ jobs:
           name: ${{ github.job }}-sdist
           path: |
             ./dist/*.tar.gz
-            ./dist/*.tar.gz.md5
           if-no-files-found: error
           retention-days: 1
 
   publish:
     name: Publish
     runs-on: ubuntu-24.04
-    environment: pypi
+    environment: testpypi
     permissions:
       contents: read
       id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
@@ -249,21 +250,23 @@ jobs:
           path: ./dist/
           merge-multiple: true
 
-      - name: Upload Package to S3
-        run: |
-          tarball="$(basename ./dist/*.tar.gz)"
-          md5_file="${tarball}.md5"
-          aws s3 cp "dist/${md5_file}" "${S3_DST}/${md5_file}"
-          aws s3 cp "dist/${tarball}" "${S3_DST}/${tarball}"
-          rm "dist/${md5_file}"
-        env:
-          S3_DST: s3://nr-downloads-main/python_agent/release
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: us-west-2
+      # - name: Upload Package to S3
+      #   run: |
+      #     tarball="$(basename ./dist/*.tar.gz)"
+      #     md5_file="${tarball}.md5"
+      #     aws s3 cp "dist/${md5_file}" "${S3_DST}/${md5_file}"
+      #     aws s3 cp "dist/${tarball}" "${S3_DST}/${tarball}"
+      #     rm "dist/${md5_file}"
+      #   env:
+      #     S3_DST: s3://nr-downloads-main/python_agent/release
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     AWS_DEFAULT_REGION: us-west-2
 
       - name: Upload Package
         uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # 1.12.4
+        with:
+          repository-url: https://test.pypi.org/legacy/
 
       - name: Attest
         uses: actions/attest-build-provenance@db473fddc028af60658334401dc6fa3ffd8669fd # 2.3.0
@@ -271,20 +274,20 @@ jobs:
         with:
           subject-path: ./dist/*
 
-      - name: Wait for release to be available
-        id: wait
-        run: |
-          sleep 60
+      # - name: Wait for release to be available
+      #   id: wait
+      #   run: |
+      #     sleep 60
 
-      - name: Create release tags for Lambda and K8s Init Containers
-        run: |
-          RELEASE_TITLE="New Relic Python Agent ${GITHUB_REF_NAME}.0"
-          RELEASE_TAG="${GITHUB_REF_NAME}.0_python"
-          RELEASE_NOTES="Automated release for [Python Agent ${GITHUB_REF_NAME}](https://github.com/newrelic/newrelic-python-agent/releases/tag/${GITHUB_REF_NAME})"
-          gh auth login --with-token <<< "$GH_RELEASE_TOKEN"
-          echo "newrelic/newrelic-lambda-layers - Releasing \"${RELEASE_TITLE}\" with tag ${RELEASE_TAG}"
-          gh release create "${RELEASE_TAG}" --title="${RELEASE_TITLE}" --repo=newrelic/newrelic-lambda-layers --notes="${RELEASE_NOTES}"
-          echo "newrelic/newrelic-agent-init-container - Releasing \"${RELEASE_TITLE}\" with tag ${RELEASE_TAG}"
-          gh release create "${RELEASE_TAG}" --title="${RELEASE_TITLE}" --repo=newrelic/newrelic-agent-init-container --notes="${RELEASE_NOTES}"
-        env:
-          GH_RELEASE_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}
+      # - name: Create release tags for Lambda and K8s Init Containers
+      #   run: |
+      #     RELEASE_TITLE="New Relic Python Agent ${GITHUB_REF_NAME}.0"
+      #     RELEASE_TAG="${GITHUB_REF_NAME}.0_python"
+      #     RELEASE_NOTES="Automated release for [Python Agent ${GITHUB_REF_NAME}](https://github.com/newrelic/newrelic-python-agent/releases/tag/${GITHUB_REF_NAME})"
+      #     gh auth login --with-token <<< "$GH_RELEASE_TOKEN"
+      #     echo "newrelic/newrelic-lambda-layers - Releasing \"${RELEASE_TITLE}\" with tag ${RELEASE_TAG}"
+      #     gh release create "${RELEASE_TAG}" --title="${RELEASE_TITLE}" --repo=newrelic/newrelic-lambda-layers --notes="${RELEASE_NOTES}"
+      #     echo "newrelic/newrelic-agent-init-container - Releasing \"${RELEASE_TITLE}\" with tag ${RELEASE_TAG}"
+      #     gh release create "${RELEASE_TAG}" --title="${RELEASE_TITLE}" --repo=newrelic/newrelic-agent-init-container --notes="${RELEASE_NOTES}"
+      #   env:
+      #     GH_RELEASE_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}
