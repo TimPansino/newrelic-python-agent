@@ -86,6 +86,14 @@ jobs:
             os: ubuntu-24.04
           - wheel: cp313-manylinux
             os: ubuntu-24.04
+          - wheel: pp38-manylinux
+            os: ubuntu-24.04
+          - wheel: pp39-manylinux
+            os: ubuntu-24.04
+          - wheel: pp310-manylinux
+            os: ubuntu-24.04
+          - wheel: pp311-manylinux
+            os: ubuntu-24.04
           # Linux musllibc
           - wheel: cp38-musllinux
             os: ubuntu-24.04

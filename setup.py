@@ -49,8 +49,8 @@ else:
 
     raise RuntimeError(error_msg)
 
-with_setuptools = False
 is_windows = sys.platform == "win32"
+is_pypy = hasattr(sys, "pypy_version_info")
 
 try:
     from setuptools import setup
@@ -58,6 +58,8 @@ try:
     with_setuptools = True
 except ImportError:
     from distutils.core import setup
+
+    with_setuptools = False
 
 from distutils.command.build_ext import build_ext
 from distutils.core import Extension
@@ -210,7 +212,7 @@ def run_setup(with_extensions):
             kwargs_tmp["ext_modules"] = [
                 Extension("newrelic.packages.wrapt._wrappers", ["newrelic/packages/wrapt/_wrappers.c"]),
             ]
-            if not is_windows:
+            if not is_windows and not is_pypy:
                 # These extensions are only supported on POSIX platforms.
                 monotonic_libraries = []
                 if with_librt():
@@ -264,9 +266,6 @@ if with_extensions:
         with_extensions = False
     else:
         with_extensions = None
-
-if hasattr(sys, "pypy_version_info"):
-    with_extensions = False
 
 if with_extensions is not None:
     run_setup(with_extensions=with_extensions)
