@@ -192,7 +192,7 @@ jobs:
   publish:
     name: Publish
     runs-on: ubuntu-24.04
-    environment: pypi
+    environment: testpypi
     permissions:
       contents: read
       id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
