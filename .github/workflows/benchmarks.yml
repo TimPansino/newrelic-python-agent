@@ -15,11 +15,6 @@
 name: Benchmarks
 
 on:
-  push:
-    branches:
-      - main
-    tags-ignore:
-      - "**"
   pull_request:
 
 permissions:
@@ -43,6 +38,10 @@ jobs:
       matrix:
         python: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
 
+    env:
+      ASV_FACTOR: "1.1"
+      BASE_SHA: ${{ github.event.pull_request.base.sha }}
+
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # 5.0.0
 
@@ -56,15 +55,6 @@ jobs:
           mkdir -p /github/home/.cache/pip
           chown -R "$(whoami)" /github/home/.cache/pip
 
-      - name: Determine Base Ref
-        id: base_ref
-        run: |
-          upstream=${{ github.event_name == 'pull_request' && 'origin/' || '' }}
-          branch=${{ github.event_name == 'pull_request' && github.base_ref || 'HEAD^' }}
-          base_ref="${upstream}${branch}"
-          echo "BASE_REF=$(git rev-parse ${base_ref})" >>"${GITHUB_OUTPUT}"
-          echo "HEAD_REF=$(git rev-parse HEAD)" >>"${GITHUB_OUTPUT}"
-
       - name: Install Dependencies
         run: |
           pip install asv
@@ -75,14 +65,9 @@ jobs:
 
       - name: Run Benchmark
         run: |
-          asv continuous -e \
-            ${{ steps.base_ref.outputs.BASE_REF }} \
-            ${{ steps.base_ref.outputs.HEAD_REF }} \
-            --python=${{ matrix.python }}
-
-      - name: Compare Results
-        run: |
-          asv compare \
-            ${{ steps.base_ref.outputs.BASE_REF }} \
-            ${{ steps.base_ref.outputs.HEAD_REF }} \
-            --python=${{ matrix.python }}
+          asv continuous \
+            --show-stderr \
+            --split \
+            --factor ${ASV_FACTOR} \
+            --python=${{ matrix.python }} \
+            ${BASE_SHA} ${GITHUB_SHA}
