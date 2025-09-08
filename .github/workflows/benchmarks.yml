@@ -51,18 +51,23 @@ jobs:
           mkdir -p /github/home/.cache/pip
           chown -R "$(whoami)" /github/home/.cache/pip
 
-      - name: Benchmark vs PR Head
-        if: github.event_name == 'pull_request'
+      - name: Determine Base Ref
+        id: base_ref
         run: |
-          pip install asv
-          asv machine --yes --machine GITHUB_ACTIONS
-          asv continuous -e ${{ github.base_ref }} HEAD
-          asv compare ${{ github.base_ref }} HEAD
+          echo "BASE_REF=${{ github.event_name == 'pull_request' && github.base_ref || 'HEAD^' }}" >>"${GITHUB_OUTPUT}"
 
-      - name: Benchmark vs Previous Commit
-        if: github.event_name != 'pull_request'
+      - name: Install Dependencies
         run: |
           pip install asv
-          asv machine --yes --machine GITHUB_ACTIONS
-          asv continuous -e HEAD
-          asv compare HEAD^ HEAD
+
+      - name: Configure Machine Information
+        run: |
+          asv machine --yes
+
+      - name: Run Benchmark
+        run: |
+          asv continuous -e ${{ steps.base_ref.outputs.BASE_REF }} HEAD
+
+      - name: Compare Results
+        run: |
+          asv compare ${{ steps.base_ref.outputs.BASE_REF }} HEAD
