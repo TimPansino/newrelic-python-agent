@@ -54,11 +54,13 @@ jobs:
       - name: Benchmark vs PR Head
         if: github.event_name == 'pull_request'
         run: |
+          asv machine --yes --machine GITHUB_ACTIONS
           asv continuous -e ${{ github.base_ref }} HEAD
           asv compare ${{ github.base_ref }} HEAD
 
       - name: Benchmark vs Previous Commit
         if: github.event_name != 'pull_request'
         run: |
+          asv machine --yes --machine GITHUB_ACTIONS
           asv continuous -e HEAD
           asv compare HEAD^ HEAD
