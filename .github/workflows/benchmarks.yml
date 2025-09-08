@@ -54,7 +54,9 @@ jobs:
       - name: Determine Base Ref
         id: base_ref
         run: |
-          echo "BASE_REF=${{ github.event_name == 'pull_request' && github.base_ref || 'HEAD^' }}" >>"${GITHUB_OUTPUT}"
+          upstream=${{ github.event_name == 'pull_request' && 'origin/' || '' }}
+          branch=${{ github.event_name == 'pull_request' && github.base_ref || 'HEAD^' }}
+          echo "BASE_REF=${upstream}${branch}" >>"${GITHUB_OUTPUT}"
 
       - name: Install Dependencies
         run: |
