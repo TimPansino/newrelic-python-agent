@@ -38,6 +38,11 @@ jobs:
       options: >-
         --add-host=host.docker.internal:host-gateway
     timeout-minutes: 30
+
+    strategy:
+      matrix:
+        python: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # 5.0.0
 
@@ -56,7 +61,9 @@ jobs:
         run: |
           upstream=${{ github.event_name == 'pull_request' && 'origin/' || '' }}
           branch=${{ github.event_name == 'pull_request' && github.base_ref || 'HEAD^' }}
-          echo "BASE_REF=${upstream}${branch}" >>"${GITHUB_OUTPUT}"
+          base_ref="${upstream}${branch}"
+          echo "BASE_REF=$(git rev-parse ${base_ref})" >>"${GITHUB_OUTPUT}"
+          echo "HEAD_REF=$(git rev-parse HEAD)" >>"${GITHUB_OUTPUT}"
 
       - name: Install Dependencies
         run: |
@@ -68,8 +75,14 @@ jobs:
 
       - name: Run Benchmark
         run: |
-          asv continuous -e ${{ steps.base_ref.outputs.BASE_REF }} HEAD
+          asv continuous -e \
+            ${{ steps.base_ref.outputs.BASE_REF }} \
+            ${{ steps.base_ref.outputs.HEAD_REF }} \
+            --python=${{ matrix.python }}
 
       - name: Compare Results
         run: |
-          asv compare ${{ steps.base_ref.outputs.BASE_REF }} HEAD
+          asv compare \
+            ${{ steps.base_ref.outputs.BASE_REF }} \
+            ${{ steps.base_ref.outputs.HEAD_REF }} \
+            --python=${{ matrix.python }}
