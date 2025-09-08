@@ -154,6 +154,10 @@ ignore = [
     "PT007",  # pytest-parametrize-values-wrong-type (style choice)
     "PT011",  # pytest-raises-too-broad (we frequently test for generic errors)
 ]
+"benchmarks/*" = [
+    # Disabled rules in benchmarks
+    "S",  # flake8-bandit (security checks are not necessary in benchmarks)
+]
 "newrelic/admin/*" = [
     # Disabled rules in admin scripts
     "S108",  # flake8-bandit (hardcoded log files are never used as input)
