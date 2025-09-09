@@ -12,18 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from . import _DeveloperModeBenchmark
+from . import benchmark
 
 
-class NRActiveSuite(_DeveloperModeBenchmark):
-    def _nr_active(self):
+@benchmark
+class NRActiveSuite:
+    def nr_active(self):
         from newrelic.agent import application
 
         assert application().active, "Application not active!"
         return 0
-
-    def time_nr_active(self):
-        self._nr_active()
-
-    def mem_nr_active(self):
-        self._nr_active()

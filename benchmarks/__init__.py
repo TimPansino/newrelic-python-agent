@@ -34,19 +34,58 @@ collector_agent_registration = collector_agent_registration_fixture(
     app_name="Python Agent Test (agent_benchmarks)", default_settings=_default_settings
 )
 
+BENCHMARK_PREFIXES = ("time", "mem")
 
-class _DeveloperModeBenchmark:
+
+def setup_collector_agent_registration(instance):
+    # Register the agent with the collector using the pytest fixture manually
+    instance._collector_agent_registration = collector_agent_registration()
+    instance.application = application = next(instance._collector_agent_registration)
+
+    # Wait for the application to become active.
+    collector_available_fixture(application)
+
+
+def teardown_collector_agent_registration(instance):
+    # Teardown the pytest fixture manually
+    try:
+        next(instance._collector_agent_registration)
+    except StopIteration:
+        pass
+
+
+def benchmark(cls):
+    # Find all methods not prefixed with underscores and treat them as benchmark methods
+    benchmark_methods = {
+        name: method for name, method in vars(cls).items() if callable(method) and not name.startswith("_")
+    }
+
+    # Remove setup and teardown functions from benchmark methods and save them
+    cls._setup = benchmark_methods.pop("setup", None)
+    cls._teardown = benchmark_methods.pop("teardown", None)
+
+    # Patch in benchmark methods for each prefix
+    for name, method in benchmark_methods.items():
+        for prefix in BENCHMARK_PREFIXES:
+            setattr(cls, f"{prefix}_{name}", method)
+
+    # Define agent activation as setup and teardown functions
     def setup(self):
-        # Register the agent with the collector using the pytest fixture manually
-        self._collector_agent_registration = collector_agent_registration()
-        self.application = application = next(self._collector_agent_registration)
+        setup_collector_agent_registration(self)
 
-        # Wait for the application to become active.
-        collector_available_fixture(application)
+        # Call the original setup if it exists
+        if getattr(self, "_setup", None) is not None:
+            self._setup()
 
     def teardown(self):
-        # Teardown the pytest fixture manually
-        try:
-            next(self._collector_agent_registration)
-        except StopIteration:
-            pass
+        teardown_collector_agent_registration(self)
+
+        # Call the original teardown if it exists
+        if getattr(self, "_teardown", None) is not None:
+            self._teardown()
+
+    # Patch in new setup and teardown methods
+    cls.setup = setup
+    cls.teardown = teardown
+
+    return cls
