@@ -24,6 +24,6 @@ class NRActiveSuite:
 
         assert application().active, "Application not active!"
 
-    @background_task
+    @background_task()
     def active_transaction(self):
         assert current_transaction(), "No active transaction!"
