@@ -15,6 +15,8 @@
 import sys
 from pathlib import Path
 
+from newrelic.common.object_wrapper import function_wrapper
+
 # Amend sys.path to allow importing fixtures from testing_support
 tests_path = Path(__file__).parent.parent / "tests"
 sys.path.append(str(tests_path))
@@ -54,6 +56,12 @@ def teardown_collector_agent_registration(instance):
         pass
 
 
+@function_wrapper
+def wrap_benchmark_method(wrapped, instance, args, kwargs):
+    wrapped(*args, **kwargs)  # Run the benchmark
+    return 0  # Return the number of bytes produced by the agent during this benchmark here
+
+
 def benchmark(cls):
     # Find all methods not prefixed with underscores and treat them as benchmark methods
     benchmark_methods = {
@@ -67,7 +75,11 @@ def benchmark(cls):
     # Patch in benchmark methods for each prefix
     for name, method in benchmark_methods.items():
         for prefix in BENCHMARK_PREFIXES:
-            setattr(cls, f"{prefix}_{name}", method)
+            if prefix == "track":
+                # Wrap track_ methods in a wrapper that returns the bytes produced by the agent during this benchmark
+                setattr(cls, f"{prefix}_{name}", wrap_benchmark_method(method))
+            else:
+                setattr(cls, f"{prefix}_{name}", method)
 
     # Define agent activation as setup and teardown functions
     def setup(self):

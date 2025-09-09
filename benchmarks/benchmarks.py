@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from newrelic.agent import background_task, current_transaction
+
 from . import benchmark
 
 
@@ -21,4 +23,7 @@ class NRActiveSuite:
         from newrelic.agent import application
 
         assert application().active, "Application not active!"
-        return 0
+
+    @background_task
+    def active_transaction(self):
+        assert current_transaction(), "No active transaction!"
