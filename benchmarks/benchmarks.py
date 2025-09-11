@@ -27,3 +27,8 @@ class NRActiveSuite:
     @background_task()
     def active_transaction(self):
         assert current_transaction(), "No active transaction!"
+
+
+# TODO REMOVE THIS - DOING SIMPLE SCALING LOAD TESTING WITH THIS
+for i in range(1, 100):
+    globals()[f"NRActiveSuite_{i}"] = type(f"NRActiveSuite_{i}", (NRActiveSuite,), {})
