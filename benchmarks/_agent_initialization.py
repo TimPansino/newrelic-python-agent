@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import sys
 from pathlib import Path
 from threading import Lock
@@ -47,6 +48,14 @@ def collector_agent_registration(instance):
 
     # Register the agent with the collector using the pytest fixture manually
     with INITIALIZATION_LOCK:
+        if APPLICATIONS:  # Must re-check this condition just in case
+            return
+
+        # Force benchmarking to always use developer mode
+        os.environ["NEW_RELIC_DEVELOPER_MODE"] = "true"  # Force developer mode
+        os.environ.pop("NEW_RELIC_CONFIG_FILE", None)  # Delete this env var
+
+        # Use pytest fixture by hand to start the agent
         fixture = _collector_agent_registration_fixture()
         FIXTURES.append(fixture)
         APPLICATIONS.append(next(fixture))

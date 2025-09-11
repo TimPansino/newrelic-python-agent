@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ._agent_initialization import setup_collector_agent_registration, teardown_collector_agent_registration
+from ._agent_initialization import collector_agent_registration
 
 BENCHMARK_PREFIXES = ("time", "mem")
 
@@ -23,32 +23,23 @@ def benchmark(cls):
         name: method for name, method in vars(cls).items() if callable(method) and not name.startswith("_")
     }
 
-    # Remove setup and teardown functions from benchmark methods and save them
+    # Remove setup function from benchmark methods and save it
     cls._setup = benchmark_methods.pop("setup", None)
-    cls._teardown = benchmark_methods.pop("teardown", None)
 
     # Patch in benchmark methods for each prefix
     for name, method in benchmark_methods.items():
         for prefix in BENCHMARK_PREFIXES:
             setattr(cls, f"{prefix}_{name}", method)
 
-    # Define agent activation as setup and teardown functions
+    # Define agent activation as setup function
     def setup(self):
-        setup_collector_agent_registration(self)
+        collector_agent_registration(self)
 
         # Call the original setup if it exists
         if getattr(self, "_setup", None) is not None:
             self._setup()
 
-    def teardown(self):
-        teardown_collector_agent_registration(self)
-
-        # Call the original teardown if it exists
-        if getattr(self, "_teardown", None) is not None:
-            self._teardown()
-
-    # Patch in new setup and teardown methods
+    # Patch in new setup method
     cls.setup = setup
-    cls.teardown = teardown
 
     return cls
