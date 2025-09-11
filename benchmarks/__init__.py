@@ -12,54 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
-from pathlib import Path
-
-from newrelic.common.object_wrapper import function_wrapper
-
-# Amend sys.path to allow importing fixtures from testing_support
-tests_path = Path(__file__).parent.parent / "tests"
-sys.path.append(str(tests_path))
-
-from testing_support.fixtures import collector_agent_registration_fixture, collector_available_fixture  # noqa: E402
-
-_default_settings = {
-    "package_reporting.enabled": False,  # Turn off package reporting for testing as it causes slow downs.
-    "transaction_tracer.explain_threshold": 0.0,
-    "transaction_tracer.transaction_threshold": 0.0,
-    "transaction_tracer.stack_trace_threshold": 0.0,
-    "debug.log_data_collector_payloads": True,
-    "debug.record_transaction_failure": True,
-}
-
-collector_agent_registration = collector_agent_registration_fixture(
-    app_name="Python Agent Test (agent_benchmarks)", default_settings=_default_settings
-)
+from ._agent_initialization import setup_collector_agent_registration, teardown_collector_agent_registration
 
 BENCHMARK_PREFIXES = ("time", "mem")
-
-
-def setup_collector_agent_registration(instance):
-    # Register the agent with the collector using the pytest fixture manually
-    instance._collector_agent_registration = collector_agent_registration()
-    instance.application = application = next(instance._collector_agent_registration)
-
-    # Wait for the application to become active.
-    collector_available_fixture(application)
-
-
-def teardown_collector_agent_registration(instance):
-    # Teardown the pytest fixture manually
-    try:
-        next(instance._collector_agent_registration)
-    except StopIteration:
-        pass
-
-
-@function_wrapper
-def wrap_benchmark_method(wrapped, instance, args, kwargs):
-    wrapped(*args, **kwargs)  # Run the benchmark
-    return 0  # Return the number of bytes produced by the agent during this benchmark here
 
 
 def benchmark(cls):
@@ -75,11 +30,7 @@ def benchmark(cls):
     # Patch in benchmark methods for each prefix
     for name, method in benchmark_methods.items():
         for prefix in BENCHMARK_PREFIXES:
-            if prefix == "track":
-                # Wrap track_ methods in a wrapper that returns the bytes produced by the agent during this benchmark
-                setattr(cls, f"{prefix}_{name}", wrap_benchmark_method(method))
-            else:
-                setattr(cls, f"{prefix}_{name}", method)
+            setattr(cls, f"{prefix}_{name}", method)
 
     # Define agent activation as setup and teardown functions
     def setup(self):
