@@ -47,9 +47,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Fetch all git refs
+      - name: Fetch git tags
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git fetch --tags origin
 
       - name: Configure pip cache
         run: |
