@@ -18,7 +18,7 @@ from . import benchmark
 
 
 @benchmark
-class AgentApisSuite:
+class Suite:
     def bench_application(self):
         from newrelic.agent import application
 

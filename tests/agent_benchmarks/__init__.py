@@ -15,12 +15,13 @@
 from ._agent_initialization import collector_agent_registration
 
 BENCHMARK_PREFIXES = ("time", "mem")
+REPLACE_PREFIX = "bench_"
 
 
 def benchmark(cls):
     # Find all methods not prefixed with underscores and treat them as benchmark methods
     benchmark_methods = {
-        name: method for name, method in vars(cls).items() if callable(method) and not name.startswith("_")
+        name: method for name, method in vars(cls).items() if callable(method) and name.startswith(REPLACE_PREFIX)
     }
 
     # Remove setup function from benchmark methods and save it
@@ -28,6 +29,7 @@ def benchmark(cls):
 
     # Patch in benchmark methods for each prefix
     for name, method in benchmark_methods.items():
+        name = name[len(REPLACE_PREFIX):]  # Remove "bench_" prefix
         for prefix in BENCHMARK_PREFIXES:
             setattr(cls, f"{prefix}_{name}", method)
 
