@@ -18,20 +18,15 @@ from . import benchmark
 
 
 @benchmark
-class NRActiveSuite:
+class AgentApisSuite:
     def bench_application(self):
         from newrelic.agent import application
 
-        assert application()
-
-    def bench_application_active(self):
-        from newrelic.agent import application
-
-        assert application().active
+        return application()
 
     @background_task()
     def bench_background_task(self):
-        assert current_transaction()
+        return current_transaction()
 
 
 # accept_distributed_trace_headers
