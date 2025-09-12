@@ -31,4 +31,4 @@ class NRActiveSuite:
 
 # TODO REMOVE THIS - DOING SIMPLE SCALING LOAD TESTING WITH THIS
 for i in range(1, 100):
-    globals()[f"NRActiveSuite_{i}"] = type(f"NRActiveSuite_{i}", (NRActiveSuite,), {})
+    globals()[f"NRActiveSuite_{i:02d}"] = type(f"NRActiveSuite_{i:02d}", (NRActiveSuite,), {})
