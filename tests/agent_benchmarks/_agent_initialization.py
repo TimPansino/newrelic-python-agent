@@ -18,7 +18,7 @@ from pathlib import Path
 from threading import Lock
 
 # Amend sys.path to allow importing fixtures from testing_support
-tests_path = Path(__file__).parent.parent / "tests"
+tests_path = Path(__file__).parent.parent
 sys.path.append(str(tests_path))
 
 from testing_support.fixtures import collector_agent_registration_fixture, collector_available_fixture  # noqa: E402

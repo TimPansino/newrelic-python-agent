@@ -1,55 +1,19 @@
 {
-    // The version of the config file format.  Do not change, unless
-    // you know what you are doing.
-    "version": 1,
-
-    // The name of the project being benchmarked
+    "version": 1,  // The version of the config file format.
     "project": "newrelic",
-
-    // The project's homepage
     "project_url": "https://github.com/newrelic/newrelic-python-agent",
-
-    // The URL or local path of the source code repository for the
-    // project being benchmarked
+    "show_commit_url": "https://github.com/newrelic/newrelic-python-agent/commit/",
     "repo": ".",
-
-    // Customizable commands for building the project.
-    // See asv.conf.json documentation.
-    // To build the package using pyproject.toml (PEP518), uncomment the following lines
-    // "build_command": [
-    //     "python -m pip install build",
-    //     "python -m build",
-    //     "python -m pip wheel -w {build_cache_dir} {build_dir}"
-    // ],
-    // To build the package using setuptools and a setup.py file, uncomment the following lines
-    // "build_command": [
-    //     "python setup.py build",
-    //     "python -m pip wheel -w {build_cache_dir} {build_dir}"
-    // ],
-
-    // Customizable commands for installing and uninstalling the project.
-    // See asv.conf.json documentation.
-    // "install_command": ["in-dir={env_dir} python -mpip install {wheel_file}"],
-    // "uninstall_command": ["return-code=any python -mpip uninstall -y {project}"],
-
-    // The tool to use to create environments.  May be "conda",
-    // "virtualenv", "mamba" (above 3.8)
-    // or other value depending on the plugins in use.
-    // If missing or the empty string, the tool will be automatically
-    // determined by looking for tools on the PATH environment
-    // variable.
     "environment_type": "virtualenv",
-
-    // timeout in seconds for installing any dependencies in environment
-    // defaults to 10 min
     "install_timeout": 120,
-
-    // the base URL to show a commit for the project.
-    // "show_commit_url": "http://github.com/owner/project/commit/",
-
-    // The Pythons you'd like to test against.  If not provided, defaults
-    // to the current version of Python used to run `asv`.
     "pythons": ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"],
+    "benchmark_dir": "tests/agent_benchmarks",
+    "env_dir": ".asv/env",
+    "results_dir": ".asv/results",
+    "html_dir": ".asv/html",
+    "regressions_thresholds": {
+       ".*": 0.2,     // Threshold of 20%
+    },
 
     // The matrix of dependencies to test.  Each key of the "req"
     // requirements dictionary is the name of a package (in PyPI) and
@@ -121,22 +85,6 @@
     //     {"platform": "win32", "environment_type": "conda", "python": "3.12", "req": {"libpython": ""}},
     // ],
 
-    // The directory (relative to the current directory) that benchmarks are
-    // stored in.  If not provided, defaults to "benchmarks"
-    // "benchmark_dir": "benchmarks",
-
-    // The directory (relative to the current directory) to cache the Python
-    // environments in.  If not provided, defaults to "env"
-    "env_dir": ".asv/env",
-
-    // The directory (relative to the current directory) that raw benchmark
-    // results are stored in.  If not provided, defaults to "results".
-    "results_dir": ".asv/results",
-
-    // The directory (relative to the current directory) that the html tree
-    // should be written to.  If not provided, defaults to "html".
-    "html_dir": ".asv/html",
-
     // The commits after which the regression search in `asv publish`
     // should start looking for regressions. Dictionary whose keys are
     // regexps matching to benchmark names, and values corresponding to
@@ -148,16 +96,5 @@
     // "regressions_first_commits": {
     //    "some_benchmark": "352cdf",  // Consider regressions only after this commit
     //    "another_benchmark": null,   // Skip regression detection altogether
-    // },
-
-    // The thresholds for relative change in results, after which `asv
-    // publish` starts reporting regressions. Dictionary of the same
-    // form as in ``regressions_first_commits``, with values
-    // indicating the thresholds.  If multiple entries match, the
-    // maximum is taken. If no entry matches, the default is 5%.
-    //
-    // "regressions_thresholds": {
-    //    "some_benchmark": 0.01,     // Threshold of 1%
-    //    "another_benchmark": 0.5,   // Threshold of 50%
     // },
 }
