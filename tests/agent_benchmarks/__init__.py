@@ -29,7 +29,7 @@ def benchmark(cls):
 
     # Patch in benchmark methods for each prefix
     for name, method in benchmark_methods.items():
-        name = name[len(REPLACE_PREFIX):]  # Remove "bench_" prefix
+        name = name[len(REPLACE_PREFIX) :]  # Remove "bench_" prefix
         for prefix in BENCHMARK_PREFIXES:
             setattr(cls, f"{prefix}_{name}", method)
 
