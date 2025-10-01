@@ -230,7 +230,7 @@ jobs:
 
   macos:
     env:
-      TOTAL_GROUPS: 1
+      TOTAL_GROUPS: 2
       UV_PYTHON: "3.13"
       UV_PYTHON_DOWNLOADS: "never"
       UV_PYTHON_PREFERENCE: "only-system"
@@ -238,7 +238,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        group-number: [1]
+        group-number: [1, 2]
 
     runs-on: macos-15-intel
     timeout-minutes: 30
@@ -293,7 +293,7 @@ jobs:
 
   macos_arm64:
     env:
-      TOTAL_GROUPS: 1
+      TOTAL_GROUPS: 2
       UV_PYTHON: "3.13"
       UV_PYTHON_DOWNLOADS: "never"
       UV_PYTHON_PREFERENCE: "only-system"
@@ -302,7 +302,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        group-number: [1]
+        group-number: [1, 2]
 
     runs-on: macos-15
     timeout-minutes: 30
