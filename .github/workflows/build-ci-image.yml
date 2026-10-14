@@ -107,9 +107,10 @@ jobs:
 
       - name: Export Digest
         run: |
-          mkdir -p ${{ runner.temp }}/digests
-          digest="${{ steps.build.outputs.digest }}"
-          touch "${{ runner.temp }}/digests/${digest#sha256:}"
+          mkdir -p "${RUNNER_TEMP}/digests"
+          touch "${RUNNER_TEMP}/digests/${DIGEST#sha256:}"
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
 
       - name: Upload Digest
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -171,8 +172,13 @@ jobs:
         run: |
           # shellcheck disable=SC2046
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf 'ghcr.io/${{ steps.image-name.outputs.IMAGE_NAME }}@sha256:%s ' *)
+            $(printf "ghcr.io/${IMAGE_NAME}@sha256:%s " *)
+        env:
+          IMAGE_NAME: ${{ steps.image-name.outputs.IMAGE_NAME }}
 
       - name: Inspect Image
         run: |
-          docker buildx imagetools inspect ghcr.io/${{ steps.image-name.outputs.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+          docker buildx imagetools inspect "ghcr.io/${IMAGE_NAME}:${IMAGE_VERSION}"
+        env:
+          IMAGE_NAME: ${{ steps.image-name.outputs.IMAGE_NAME }}
+          IMAGE_VERSION: ${{ steps.meta.outputs.version }}
