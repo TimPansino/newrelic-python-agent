@@ -63,7 +63,7 @@ on:
 
 jobs:
   send-agent-metadata:
-    uses: newrelic/newrelic-agent-init-container/.github/workflows/agent-metadata.yml@main
+    uses: newrelic/newrelic-agent-init-container/.github/workflows/agent-metadata.yml@main # zizmor: ignore[unpinned-uses]
     with:
       agent-type: ${{ inputs.agent-type }}
       version: ${{ inputs.version }}
