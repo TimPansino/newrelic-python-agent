@@ -94,7 +94,7 @@ class optional_build_ext(build_ext):
 
 
 kwargs = {
-    "name": "newrelic",
+    "name": "tpansino-newrelic",
     "setup_requires": ["setuptools>=61.2", "setuptools_scm>=6.4,<10"],
     "license": "Apache-2.0",
 }
