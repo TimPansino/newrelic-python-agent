@@ -17,7 +17,7 @@
 # ===========================
 
 [project]
-name="newrelic"
+name="tpansino-newrelic"
 description = "New Relic Python Agent"
 authors = [{name = "New Relic", email = "support@newrelic.com"}]
 maintainers = [{name = "New Relic", email = "support@newrelic.com"}]
