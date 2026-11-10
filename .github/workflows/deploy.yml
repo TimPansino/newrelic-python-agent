@@ -21,12 +21,12 @@ on:
         description: "Deployment Target"
         required: true
         type: choice
-        default: pypi
+        default: testpypi
         options:
           - pypi # Production deployment (official repository only)
           # On forks, uncomment these options to make them available
-          # - testpypi # Upload to test.pypi.org for testing (forks only)
-          # - github-only # Skip package indexes and only publish the Github release (forks only)
+          - testpypi # Upload to test.pypi.org for testing (forks only)
+          - github-only # Skip package indexes and only publish the Github release (forks only)
 
 permissions:
   contents: read
