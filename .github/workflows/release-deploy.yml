@@ -15,9 +15,7 @@
 name: Deploy Release
 
 on:
-  release:
-    types:
-      - published
+  workflow_dispatch: # Must be dispatched on a tag
 
 permissions:
   contents: read
@@ -30,6 +28,8 @@ jobs:
   validate:
     name: Validate agent config schema version
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write # Draft releases are only visible to tokens with write access
     # Runs before anything is built or published. The Fleet Control backend
     # rejects metadata whose schema changed without a version bump, but that
     # happens in update-agent-metadata, after PyPI is already published.
@@ -44,6 +44,29 @@ jobs:
       - uses: actions/setup-python@v7.1.0
         with:
           python-version: "3.13"
+
+      - name: Check dispatched on a draft release tag that matches main
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          fail() {
+            echo "::error::$1"
+            echo "::error::Usage: Dispatch this workflow only on a tag created by the Draft Release workflow."
+            exit 1
+          }
+
+          if [ "${REF_TYPE}" != "tag" ]; then
+            fail "Deploy must be dispatched on a tag, not a ${REF_TYPE}."
+          fi
+          is_draft=$(gh release view "${RELEASE_TAG}" --repo="${GITHUB_REPOSITORY}" --json=isDraft --jq=.isDraft 2>/dev/null)
+          if [ "${is_draft}" != "true" ]; then
+            fail "No draft release found for tag ${RELEASE_TAG}."
+          fi
+          if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]; then
+            fail "Tag ${RELEASE_TAG} is not in sync with the head commit of main."
+          fi
 
       - name: Check schema version was bumped since previous release
         env:

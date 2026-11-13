@@ -1,0 +1,132 @@
+# Copyright 2010 New Relic, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+name: Draft Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release Tag (e.g. v12.3.4)"
+        required: true
+        type: string
+      overwrite:
+        description: "Overwrite Existing Tag"
+        required: false
+        type: boolean
+        default: false
+
+permissions: {}
+
+concurrency:
+  group: release # Only one release run happens at a time
+  cancel-in-progress: false
+
+jobs:
+  draft-release:
+    name: Create tag and draft release
+    runs-on: ubuntu-24.04
+    environment: release-approval
+    permissions:
+      contents: write # Create the tag and the draft release
+
+    steps:
+      - name: Check existing tag and release
+        id: existing
+        run: |
+          if gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${TAG}" > /dev/null 2>&1; then
+            echo "tag_exists=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "tag_exists=false" >> "${GITHUB_OUTPUT}"
+          fi
+
+          # gh release view fails when no release exists for the tag.
+          if is_draft=$(gh release view "${TAG}" --repo="${GITHUB_REPOSITORY}" --json=isDraft --jq=.isDraft 2>/dev/null); then
+            echo "release_exists=true" >> "${GITHUB_OUTPUT}"
+            echo "is_draft=${is_draft}" >> "${GITHUB_OUTPUT}"
+          else
+            echo "release_exists=false" >> "${GITHUB_OUTPUT}"
+            echo "is_draft=false" >> "${GITHUB_OUTPUT}"
+          fi
+        env:
+          TAG: ${{ inputs.tag }}
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Refuse to overwrite a published release
+        if: steps.existing.outputs.release_exists == 'true' && steps.existing.outputs.is_draft != 'true'
+        run: |
+          echo "::error::Release ${TAG} is already published and cannot be overwritten."
+          exit 1
+        env:
+          TAG: ${{ inputs.tag }}
+
+      - name: Refuse to reuse existing tag or draft without overwrite
+        if: (steps.existing.outputs.tag_exists == 'true' || steps.existing.outputs.release_exists == 'true') && !inputs.overwrite
+        run: |
+          echo "::error::Tag or draft release ${TAG} already exists. Re-run with overwrite checked to reuse it."
+          exit 1
+        env:
+          TAG: ${{ inputs.tag }}
+
+      # A draft release does not create its tag until published, so create it explicitly.
+      - name: Create release tag
+        if: steps.existing.outputs.tag_exists != 'true'
+        run: |
+          gh api "repos/${GITHUB_REPOSITORY}/git/refs" -f "ref=refs/tags/${TAG}" -f "sha=${GITHUB_SHA}"
+        env:
+          TAG: ${{ inputs.tag }}
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Update release tag
+        if: steps.existing.outputs.tag_exists == 'true' && inputs.overwrite
+        run: |
+          gh api --method PATCH "repos/${GITHUB_REPOSITORY}/git/refs/tags/${TAG}" -f "sha=${GITHUB_SHA}" -F force=true
+        env:
+          TAG: ${{ inputs.tag }}
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Create draft release
+        if: steps.existing.outputs.release_exists != 'true'
+        run: |
+          gh release create "${TAG}" --repo="${GITHUB_REPOSITORY}" --draft --verify-tag --title="${TAG}" --notes="${NOTES}"
+        env:
+          TAG: ${{ inputs.tag }}
+          NOTES: |
+            # WARNING: Do not publish this release manually.
+
+            This is a draft created by the Draft Release workflow.
+            The release will be published automatically as part of the Deploy workflow.
+            Once published, this release will be made <ins>**immutable**</ins> which can't be undone.
+
+            ## Instructions
+            
+            1. Upload the release notes here, replacing this message.
+            2. Dispatch the Deploy workflow on this draft's tag (${{ inputs.tag }})
+              * Github UI: [Deploy Release](${{ github.server_url }}/${{ github.repository }}/actions/workflows/release-deploy.yml)
+              * `gh` CLI:
+              ```bash
+              gh workflow run release-deploy.yml --ref=${{ inputs.tag }} --repo=${{ github.server_url }}/${{ github.repository }}
+              ```
+            3. Approve the Publish job after the artifacts have been built.
+            
+          GH_TOKEN: ${{ github.token }}
+
+      # Keep the existing draft and point it at the reset tag.
+      - name: Update existing draft release
+        if: steps.existing.outputs.release_exists == 'true' && inputs.overwrite
+        run: |
+          gh release edit "${TAG}" --repo="${GITHUB_REPOSITORY}" --draft --verify-tag --title="${TAG}"
+        env:
+          TAG: ${{ inputs.tag }}
+          GH_TOKEN: ${{ github.token }}
