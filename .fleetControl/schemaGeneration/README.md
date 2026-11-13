@@ -284,7 +284,7 @@ tox run -e linux-agent_unittests-py312-with_extensions
 
 ## Pre-publish validation
 
-`deploy.yml` runs `bump-schema-version.py --since=<previous release tag> --check`
+`release-deploy.yml` runs `bump-schema-version.py --since=<previous release tag> --check`
 (no `--ci`) as its first job, before any artifacts are built or published. It fails the
 release if the `version:` in `configurationDefinitions.yml` is lower than the
 previous release's version plus the bump implied by the schema diff. The schema
