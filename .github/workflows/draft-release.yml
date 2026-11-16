@@ -44,7 +44,7 @@ jobs:
       allow_draft: ${{ inputs.overwrite }}
 
   draft-release:
-    name: Create tag and draft release
+    name: Create Tag and Draft Release
     needs: [validate-release]
     runs-on: ubuntu-24.04
     environment:
@@ -55,7 +55,7 @@ jobs:
 
     steps:
       # A draft release does not create its tag until published, so create it explicitly.
-      - name: Create release tag
+      - name: Create Release Tag
         if: needs.validate-release.outputs.tag_exists != 'true'
         run: |
           gh api "repos/${GITHUB_REPOSITORY}/git/refs" -f "ref=refs/tags/${TAG}" -f "sha=${GITHUB_SHA}"
@@ -63,7 +63,7 @@ jobs:
           TAG: ${{ inputs.tag }}
           GH_TOKEN: ${{ github.token }}
 
-      - name: Update release tag
+      - name: Update Release Tag
         if: needs.validate-release.outputs.tag_exists == 'true' && inputs.overwrite
         run: |
           gh api --method PATCH "repos/${GITHUB_REPOSITORY}/git/refs/tags/${TAG}" -f "sha=${GITHUB_SHA}" -F force=true
@@ -71,7 +71,7 @@ jobs:
           TAG: ${{ inputs.tag }}
           GH_TOKEN: ${{ github.token }}
 
-      - name: Create draft release
+      - name: Create Draft Release
         if: needs.validate-release.outputs.release_exists != 'true'
         run: |
           gh release create "${TAG}" --repo="${GITHUB_REPOSITORY}" --draft --verify-tag --title="${TAG}" --notes="${NOTES}"
@@ -87,18 +87,18 @@ jobs:
             ## Instructions
 
             1. Upload the release notes here, replacing this message.
-            2. Dispatch the Deploy workflow on this draft's tag (${{ inputs.tag }})
+            2. Dispatch the Deploy Release workflow on this draft's tag (${{ inputs.tag }}) with the `${{ needs.validate-release.outputs.is_fork == 'false' && 'pypi' || 'testpypi' }}` deployment target
               * Github UI: [Deploy Release](${{ github.server_url }}/${{ github.repository }}/actions/workflows/deploy.yml)
               * `gh` CLI:
               ```bash
-              gh workflow run deploy.yml --ref=${{ inputs.tag }} --repo=${{ github.server_url }}/${{ github.repository }}
+              gh workflow run deploy.yml --ref=${{ inputs.tag }} --repo=${{ github.server_url }}/${{ github.repository }} -f deployment_target=${{ needs.validate-release.outputs.is_fork == 'false' && 'pypi' || 'testpypi' }}
               ```
-            3. Approve the Publish job after the artifacts have been built.
+            3. Approve the Publish Release job after the artifacts have been built.
 
           GH_TOKEN: ${{ github.token }}
 
       # Keep the existing draft and point it at the reset tag.
-      - name: Update existing draft release
+      - name: Update Existing Draft Release
         if: needs.validate-release.outputs.release_exists == 'true' && inputs.overwrite
         run: |
           gh release edit "${TAG}" --repo="${GITHUB_REPOSITORY}" --draft --verify-tag --title="${TAG}"

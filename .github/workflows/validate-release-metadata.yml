@@ -55,7 +55,7 @@ permissions: {}
 
 jobs:
   fetch-release:
-    name: Check tag format and existing release
+    name: Fetch Existing Releases
     runs-on: ubuntu-24.04
     permissions:
       contents: write # Draft releases are only visible to tokens with write access
@@ -68,7 +68,7 @@ jobs:
     # Keep these steps in an isolated job so write access is only granted for the release lookup.
     # Add any future validation steps to the other jobs and not this one to keep permissions minimal.
     steps:
-      - name: Check if repository is a fork or official
+      - name: Determine if Repository is a Fork or Official
         id: repo
         run: |
           if [ "${GITHUB_REPOSITORY}" = "${OFFICIAL_REPOSITORY}" ]; then
@@ -79,8 +79,8 @@ jobs:
         env:
           OFFICIAL_REPOSITORY: newrelic/newrelic-python-agent
 
-      # Runs first to prevent script injection via malformed tags.
-      - name: Check tag format
+      # Runs before any step that uses the tag, to prevent script injection via malformed tags.
+      - name: Validate Tag Format
         run: |
           # vX.Y.Z only: no leading zeros, pre-release, build metadata, or 4th component.
           semver='^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$'
@@ -91,21 +91,7 @@ jobs:
         env:
           TAG: ${{ inputs.tag }}
 
-      # This check is only used for the Deploy workflow.
-      - name: Check deploy dispatched on the release tag
-        if: inputs.require_draft
-        run: |
-          if [ "${REF_TYPE}" != "tag" ] || [ "${REF_NAME}" != "${TAG}" ]; then
-            echo "::error::Must be dispatched on tag ${TAG}, not ${REF_TYPE} ${REF_NAME}."
-            echo "::error::Usage: Dispatch the deploy workflow only on a tag created by the Draft Release workflow."
-            exit 1
-          fi
-        env:
-          TAG: ${{ inputs.tag }}
-          REF_TYPE: ${{ github.ref_type }}
-          REF_NAME: ${{ github.ref_name }}
-
-      - name: Check existing release
+      - name: Fetch Current Release State
         id: existing
         run: |
           # gh release view fails when no release exists for the tag.
@@ -120,7 +106,7 @@ jobs:
           TAG: ${{ inputs.tag }}
           GH_TOKEN: ${{ github.token }}
 
-      - name: Fetch latest release
+      - name: Fetch Previous Release Tag (Latest)
         id: latest
         run: |
           # Without a tag, gh release view returns the release marked latest, which excludes drafts and pre-releases.
@@ -139,17 +125,15 @@ jobs:
           if [[ ! "${latest_tag}" =~ ${semver} ]]; then
             echo "::error::Previous release tag ${latest_tag} is not a valid release tag. Expected format vX.Y.Z (e.g. v12.3.4)."
             exit 1
-          else
-            echo "Latest release: ${latest_tag}"
-            echo "latest_tag=${latest_tag}" >> "${GITHUB_OUTPUT}"
           fi
-
+          echo "Latest release: ${latest_tag}"
+          echo "latest_tag=${latest_tag}" >> "${GITHUB_OUTPUT}"
         env:
           IS_FORK: ${{ steps.repo.outputs.is_fork }}
           GH_TOKEN: ${{ github.token }}
 
   validate-metadata:
-    name: Check existing tag and validate release
+    name: Validate Release Metadata
     needs: [fetch-release]
     runs-on: ubuntu-24.04
     permissions:
@@ -158,8 +142,9 @@ jobs:
       tag_exists: ${{ steps.existing.outputs.tag_exists }}
 
     steps:
+      # Validates deployment target only for the Deploy workflow.
       # Only pypi is allowed on the official repo, and only testpypi or github-only on forks.
-      - name: Check deployment target
+      - name: Validate Deployment Target
         if: inputs.deployment_target != ''
         run: |
           if [ "${IS_FORK}" = "false" ]; then
@@ -181,18 +166,30 @@ jobs:
           TARGET: ${{ inputs.deployment_target }}
           IS_FORK: ${{ needs.fetch-release.outputs.is_fork }}
 
+      # This check is only used for the Deploy workflow.
+      - name: Validate Deploy Dispatched on the Release Tag
+        if: inputs.require_draft
+        run: |
+          if [ "${REF_TYPE}" != "tag" ] || [ "${REF_NAME}" != "${TAG}" ]; then
+            echo "::error::Must be dispatched on tag ${TAG}, not ${REF_TYPE} ${REF_NAME}."
+            echo "::error::Usage: Dispatch the deploy workflow only on a tag created by the Draft Release workflow."
+            exit 1
+          fi
+        env:
+          TAG: ${{ inputs.tag }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+
       - uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
-          fetch-depth: 0 # Fetch the latest release tag to compare against
+          fetch-depth: 0 # Fetch main and the latest release tag to compare against
 
-      # Skipped only on forks without a latest release; the main repo fails in fetch-release instead.
       - uses: actions/setup-python@v7.1.0
-        if: needs.fetch-release.outputs.latest_tag != ''
         with:
           python-version: "3.14"
 
-      - name: Check existing tag
+      - name: Fetch Existing Tag State
         id: existing
         run: |
           if gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${TAG}" > /dev/null 2>&1; then
@@ -204,7 +201,7 @@ jobs:
           TAG: ${{ inputs.tag }}
           GH_TOKEN: ${{ github.token }}
 
-      - name: Check release commit matches main
+      - name: Validate Release Commit Matches main
         run: |
           if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]; then
             echo "::error::Release ${TAG} must be cut from the head commit of main."
@@ -213,7 +210,7 @@ jobs:
         env:
           TAG: ${{ inputs.tag }}
 
-      - name: Refuse to overwrite a published release
+      - name: Refuse to Overwrite a Published Release
         if: needs.fetch-release.outputs.release_exists == 'true' && needs.fetch-release.outputs.is_draft != 'true'
         run: |
           echo "::error::Release ${TAG} is already published and cannot be overwritten."
@@ -222,24 +219,24 @@ jobs:
           TAG: ${{ inputs.tag }}
 
       # This check is only used for the Deploy workflow to ensure a draft exists.
-      - name: Require existing draft release
+      - name: Require Existing Draft Release for Deployment
         if: inputs.require_draft && (needs.fetch-release.outputs.is_draft != 'true' || needs.fetch-release.outputs.release_exists != 'true')
         run: |
           echo "::error::No draft release found for tag ${TAG}."
-          echo "::error::Usage: Dispatch this workflow only on a tag created by the Draft Release workflow."
+          echo "::error::Usage: Dispatch the Deploy Release workflow only on a tag created by the Draft Release workflow."
           exit 1
         env:
           TAG: ${{ inputs.tag }}
 
-      - name: Refuse to reuse existing tag or draft without overwrite
+      - name: Refuse to Reuse Existing Tag or Draft without Overwrite Input Set
         if: (steps.existing.outputs.tag_exists == 'true' || needs.fetch-release.outputs.release_exists == 'true') && !(inputs.allow_draft || inputs.require_draft)
         run: |
-          echo "::error::Tag or draft release ${TAG} already exists. Re-run draft-release with overwrite checked to reuse it."
+          echo "::error::Tag or draft release ${TAG} already exists. Re-run the Draft Release workflow with Overwrite Existing Tag checked to reuse it."
           exit 1
         env:
           TAG: ${{ inputs.tag }}
 
-      - name: Check agent config schema version was bumped since previous release
+      - name: Validate Agent Config Schema Version
         if: needs.fetch-release.outputs.latest_tag != ''
         run: |
           echo "Comparing against latest release: ${LATEST_TAG}"

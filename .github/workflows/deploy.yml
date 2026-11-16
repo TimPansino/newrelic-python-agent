@@ -46,7 +46,7 @@ jobs:
       deployment_target: ${{ inputs.deployment_target }}
 
   build-wheels-linux:
-    name: Build wheels for ${{ matrix.python }}-linux_${{ matrix.arch }}
+    name: Build Wheels for ${{ matrix.python }}-linux_${{ matrix.arch }}
     needs: validate
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 10
@@ -87,7 +87,7 @@ jobs:
           retention-days: 1
 
   build-wheels-windows:
-    name: Build wheels for ${{ matrix.python }}-win_${{ matrix.arch }}
+    name: Build Wheels for ${{ matrix.python }}-win_${{ matrix.arch }}
     needs: validate
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 10
@@ -127,7 +127,7 @@ jobs:
           retention-days: 1
 
   build-sdist:
-    name: Build sdist
+    name: Build Source Distribution
     needs: validate
     runs-on: ubuntu-24.04
 
@@ -176,7 +176,7 @@ jobs:
           retention-days: 1
 
   publish:
-    name: Publish release
+    name: Publish Release
     needs:
       - validate
       - build-wheels-linux
@@ -223,7 +223,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: us-west-2
 
-      - name: Upload assets to draft release
+      - name: Upload Assets to Draft Release
         run: |
           gh release upload "${TAG}" --repo="${GITHUB_REPOSITORY}" --clobber ./dist/*
         env:
@@ -245,20 +245,20 @@ jobs:
           # skip-existing lets a re-run finish an upload that stopped partway.
           skip-existing: true
 
-      - name: Publish draft release
+      - name: Publish Draft Release
         run: |
           gh release edit "${TAG}" --repo="${GITHUB_REPOSITORY}" --draft=false
         env:
           TAG: ${{ github.ref_name }}
           GH_TOKEN: ${{ github.token }}
 
-      - name: Wait for release to be available
+      - name: Wait for Release to be Available
         if: inputs.deployment_target == 'pypi'
         id: wait
         run: |
           sleep 60
 
-      - name: Create release tags for Lambda and K8s Init Containers
+      - name: Create Release Tags for Lambda and K8s Init Containers
         if: inputs.deployment_target == 'pypi'
         run: |
           RELEASE_TITLE="New Relic Python Agent ${GITHUB_REF_NAME}.0"
