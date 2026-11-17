@@ -37,6 +37,7 @@ concurrency:
 jobs:
   # Validate release before anything is built or published.
   validate:
+    name: Validate Release
     permissions:
       contents: write # Draft releases are only visible to tokens with write access
     uses: $/.github/workflows/validate-release-metadata.yml
