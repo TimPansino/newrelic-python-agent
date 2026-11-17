@@ -272,7 +272,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}
 
   update-agent-metadata:
-    needs: [publish]
+    needs: publish
     if: inputs.deployment_target == 'pypi' # Only registered for production releases
     permissions:
       contents: read

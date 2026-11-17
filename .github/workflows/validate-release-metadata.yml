@@ -134,7 +134,7 @@ jobs:
 
   validate-metadata:
     name: Validate Release Metadata
-    needs: [fetch-release]
+    needs: fetch-release
     runs-on: ubuntu-24.04
     permissions:
       contents: read
