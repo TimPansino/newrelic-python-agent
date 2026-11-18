@@ -22,8 +22,8 @@ on:
         description: "Release Tag (e.g. v12.3.4)"
         required: true
         type: string
-      allow_draft:
-        description: "Allow existing tag or draft release."
+      overwrite_draft:
+        description: "Allow overwriting an existing tag or draft release."
         required: false
         type: boolean
         default: false
@@ -246,7 +246,7 @@ jobs:
 
       # Skipped when reusing an existing tag or draft is explicitly allowed or required.
       - name: Validate Tag and Draft Release Do Not Already Exist
-        if: ${{ !(inputs.allow_draft || inputs.require_draft) }}
+        if: ${{ !(inputs.overwrite_draft || inputs.require_draft) }}
         run: |
           if [ "${TAG_EXISTS}" = "true" ] || [ "${RELEASE_EXISTS}" = "true" ]; then
             echo "::error::Tag or draft release ${TAG} already exists. Re-run the Draft Release workflow with Overwrite Existing Tag checked to reuse it."

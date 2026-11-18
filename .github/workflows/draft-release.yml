@@ -42,7 +42,7 @@ jobs:
     uses: $/.github/workflows/validate-release-metadata.yml
     with:
       tag: ${{ inputs.tag }}
-      allow_draft: ${{ inputs.overwrite }}
+      overwrite_draft: ${{ inputs.overwrite }}
 
   draft-release:
     name: Create Tag and Draft Release
