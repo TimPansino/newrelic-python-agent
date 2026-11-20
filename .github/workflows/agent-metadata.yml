@@ -77,6 +77,7 @@ concurrency:
 
 jobs:
   send-agent-metadata:
+    name: Send Agent Metadata
     runs-on: ubuntu-latest
     environment: agent-metadata
     steps:
@@ -85,7 +86,7 @@ jobs:
         with:
           disable-sudo: true
           egress-policy: audit
-      - name: Send agent metadata
+      - name: Send Agent Metadata
         uses: newrelic/agent-metadata-action/send-metadata@v1.7.1
         with:
           newrelic-client-id: ${{ secrets.FC_SYS_ID_CLIENT_ID }}

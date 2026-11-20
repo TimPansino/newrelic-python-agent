@@ -34,13 +34,20 @@ concurrency:
 
 jobs:
   ghcr-cleanup-image:
-    name: ghcr cleanup action
+    name: Clean Up CI Images
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write # Delete old images from GitHub Container Registry
     steps:
-      - uses: dataaxiom/ghcr-cleanup-action@v1.2.2
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2.22.4
+        with:
+          disable-sudo: true
+          egress-policy: audit
+
+      - name: Delete Old CI Images
+        uses: dataaxiom/ghcr-cleanup-action@v1.2.2
         with:
           package: newrelic-python-agent-ci
           exclude-tags: latest

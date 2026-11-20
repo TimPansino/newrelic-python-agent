@@ -29,10 +29,17 @@ jobs:
   # Aggregate Benchmark Results
   # ===========================
   benchmarks:
+    name: Aggregate Benchmark Results
     runs-on: ubuntu-24.04
     if: always() # Always run, even on cancellation or failure
     needs: benchmark
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2.22.4
+        with:
+          disable-sudo: true
+          egress-policy: audit
+
       - name: Status
         env:
           ANY_CANCELLED: ${{ contains(needs.*.result, 'cancelled') }}
@@ -53,6 +60,7 @@ jobs:
   # Benchmarks Run Directly On Runners
   # ==================================
   benchmark:
+    name: Run Benchmarks on Python ${{ matrix.python }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     strategy:
@@ -67,16 +75,24 @@ jobs:
       PYTHON_VERSION: ${{ matrix.python }}
 
     steps:
-      - uses: actions/checkout@v7.0.1
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2.22.4
+        with:
+          disable-sudo: true
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
 
-      - uses: actions/setup-python@v7.1.0
+      - name: Set Up Python
+        uses: actions/setup-python@v7.1.0
         with:
           python-version: "${{ matrix.python }}"
 
-      - name: Fetch git tags
+      - name: Fetch Git Tags
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git fetch --tags origin

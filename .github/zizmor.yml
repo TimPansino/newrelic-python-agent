@@ -13,14 +13,6 @@
 # limitations under the License.
 
 rules:
-  anonymous-definition:
-    ignore:
-      - addlicense.yml
-      - agent-metadata.yml
-      - benchmarks.yml
-      - tests.yml
-      - trivy.yml
-
   # The following two disabled rules are no longer needed in newer versions of zizmor,
   # but Megalinter v10.2.0 still ships an older copy of zizmor that throws errors.
   unpinned-uses:

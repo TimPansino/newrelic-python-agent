@@ -5,18 +5,22 @@ version: 'v0.0.3'
 workflows:
     '.github/workflows/addlicense.yml':
         - 'actions/checkout@v7.0.1'
+        - 'step-security/harden-runner@v2.22.4'
     '.github/workflows/agent-config-schema-bump.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/setup-python@v7.1.0'
+        - 'step-security/harden-runner@v2.22.4'
     '.github/workflows/agent-config-schema.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/setup-python@v7.1.0'
+        - 'step-security/harden-runner@v2.22.4'
     '.github/workflows/agent-metadata.yml':
         - 'newrelic/agent-metadata-action@v1.7.1'
         - 'step-security/harden-runner@v2.22.4'
     '.github/workflows/benchmarks.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/setup-python@v7.1.0'
+        - 'step-security/harden-runner@v2.22.4'
     '.github/workflows/build-ci-image.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/download-artifact@v8.0.2'
@@ -25,8 +29,10 @@ workflows:
         - 'docker/login-action@v4.8.0'
         - 'docker/metadata-action@v6.2.0'
         - 'docker/setup-buildx-action@v4.4.1'
+        - 'step-security/harden-runner@v2.22.4'
     '.github/workflows/delete-ci-images.yml':
         - 'dataaxiom/ghcr-cleanup-action@v1.2.2'
+        - 'step-security/harden-runner@v2.22.4'
     '.github/workflows/deploy.yml':
         - 'actions/attest@v4.2.2'
         - 'actions/checkout@v7.0.1'
@@ -36,11 +42,14 @@ workflows:
         - 'aws-actions/configure-aws-credentials@v6.3.0'
         - 'pypa/cibuildwheel@v4.3.5'
         - 'pypa/gh-action-pypi-publish@v1.14.3'
-    '.github/workflows/draft-release.yml': []
+        - 'step-security/harden-runner@v2.22.4'
+    '.github/workflows/draft-release.yml':
+        - 'step-security/harden-runner@v2.22.4'
     '.github/workflows/mega-linter.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/upload-artifact@v7.0.2'
         - 'oxsecurity/megalinter@v10.2.0'
+        - 'step-security/harden-runner@v2.22.4'
     '.github/workflows/tests.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/download-artifact@v8.0.2'
@@ -48,15 +57,19 @@ workflows:
         - 'actions/upload-artifact@v7.0.2'
         - 'astral-sh/setup-uv@v10.3.3'
         - 'codecov/codecov-action@v7.1.1'
+        - 'step-security/harden-runner@v2.22.4'
     '.github/workflows/trivy.yml':
         - 'actions/checkout@v7.0.1'
         - 'aquasecurity/trivy-action@v0.36.0'
         - 'github/codeql-action@v4.39.3'
+        - 'step-security/harden-runner@v2.22.4'
     '.github/workflows/validate-release-metadata.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/setup-python@v7.1.0'
+        - 'step-security/harden-runner@v2.22.4'
     '.github/workflows/verify-actions-lockfile.yml':
         - 'actions/checkout@v7.0.1'
+        - 'step-security/harden-runner@v2.22.4'
 dependencies:
     'actions/attest@v4.2.2':
         ref: 'v4.2.2'

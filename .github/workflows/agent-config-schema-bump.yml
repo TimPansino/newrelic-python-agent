@@ -50,20 +50,27 @@ concurrency:
 
 jobs:
   bump:
-    name: Open agent config schema bump PR
+    name: Open Config Schema Bump PR
     runs-on: ubuntu-24.04
     permissions:
       contents: write # Push the bump branch
       pull-requests: write # Open the bump PR
 
     steps:
-      - uses: actions/checkout@v7.0.1
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2.22.4
+        with:
+          disable-sudo: true
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
           ref: main
           persist-credentials: false
 
-      - name: Resolve --since ref
+      - name: Resolve Since Ref
         id: ref
         env:
           INPUT_REF: ${{ github.event.inputs.since_ref }}
@@ -81,12 +88,12 @@ jobs:
           fi
           echo "ref=$ref" >> "$GITHUB_OUTPUT"
 
-      - name: Set up Python
+      - name: Set Up Python
         uses: actions/setup-python@v7.1.0
         with:
           python-version: "3.11"
 
-      - name: Compute and apply bump
+      - name: Compute and Apply Bump
         id: bump
         env:
           SINCE_REF: ${{ steps.ref.outputs.ref }}
@@ -102,7 +109,7 @@ jobs:
             *) echo "Bump failed (exit $code)"; exit "$code" ;;
           esac
 
-      - name: Open bump PR
+      - name: Open Bump PR
         if: steps.bump.outputs.bumped == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

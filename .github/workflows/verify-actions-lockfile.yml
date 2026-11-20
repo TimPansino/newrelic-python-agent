@@ -34,12 +34,19 @@ concurrency:
 
 jobs:
   verify:
-    name: Verify Actions Lockfile
+    name: Verify Lockfile Pins
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@v7.0.1
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2.22.4
+        with:
+          disable-sudo: true
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
 
@@ -47,13 +54,13 @@ jobs:
       - run: gh extension install github/gh-actions-lock --pin v0.5.1
 
       # Offline coverage check of every workflow, including trivy.yml.
-      - name: Verify lockfile coverage (offline)
+      - name: Verify Lockfile Coverage Offline
         run: gh actions-lock --verify-local
 
       # trivy.yml is skipped here because Trivy blocks the network access
       # needed to verify its pins upstream. It is still covered by the
       # offline check above.
-      - name: Verify lockfile pins upstream (except trivy.yml)
+      - name: Verify Lockfile Pins Upstream
         run: |
           status=0
           for f in .github/workflows/*.yml; do

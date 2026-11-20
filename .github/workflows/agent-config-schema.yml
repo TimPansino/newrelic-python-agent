@@ -48,23 +48,30 @@ concurrency:
 
 jobs:
   regenerate:
-    name: Regenerate config schema
+    name: Regenerate Config Schema
     runs-on: ubuntu-24.04
     permissions:
       contents: write # Push the regenerated schema to the branch
 
     steps:
-      - uses: actions/checkout@v7.0.1
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2.22.4
+        with:
+          disable-sudo: true
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@v7.0.1
         with:
           ref: ${{ github.ref }}
           persist-credentials: false
 
-      - name: Set up Python
+      - name: Set Up Python
         uses: actions/setup-python@v7.1.0
         with:
           python-version: "3.11"
 
-      - name: Run schema generator
+      - name: Run Schema Generator
         id: generate
         # `import newrelic.core.config` reads NEW_RELIC_* env vars at import
         # time, which would leak into the schema's defaults. Unset all of
@@ -84,7 +91,7 @@ jobs:
             *) echo "Schema generator failed (exit $code)"; exit "$code" ;;
           esac
 
-      - name: Commit and push regenerated schema
+      - name: Commit and Push Regenerated Schema
         if: steps.generate.outputs.changed == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -44,6 +44,12 @@ jobs:
       issues: write # Post linter reports as comments
       pull-requests: write # Post linter reports on PRs
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2.22.4
+        with:
+          disable-sudo: true
+          egress-policy: audit
+
       # Git Checkout
       - name: Checkout Code
         uses: actions/checkout@v7.0.1
@@ -67,18 +73,18 @@ jobs:
           PYTHON_RUFF_FORMAT_ARGUMENTS: --config pyproject.toml --config 'output-format="github"'
 
       # Upload MegaLinter artifacts
-      - name: Archive production artifacts
+      - name: Archive Linter Artifacts
         if: success() || failure()
         uses: actions/upload-artifact@v7.0.2
         with:
-          name: MegaLinter reports
+          name: MegaLinter Reports
           include-hidden-files: "true"
           path: |
             megalinter-reports
             mega-linter.log
 
       # Set APPLY_FIXES_IF var for use in future steps
-      - name: Set APPLY_FIXES_IF var
+      - name: Set Apply Fixes Variable
         env:
           APPLY_FIXES_IF: >-
             ${{
@@ -96,7 +102,7 @@ jobs:
           printf 'APPLY_FIXES_IF=%s\n' "${APPLY_FIXES_IF}" >> "${GITHUB_ENV}"
 
       # Set APPLY_FIXES_IF_* vars for use in future steps
-      - name: Set APPLY_FIXES_IF_* vars
+      - name: Set Apply Fixes Conditions
         env:
           APPLY_FIXES_IF_PR: >-
             ${{
@@ -113,11 +119,11 @@ jobs:
           printf 'APPLY_FIXES_IF_PR=%s\n' "${APPLY_FIXES_IF_PR}" >> "${GITHUB_ENV}"
           printf 'APPLY_FIXES_IF_COMMIT=%s\n' "${APPLY_FIXES_IF_COMMIT}" >> "${GITHUB_ENV}"
 
-      - name: Prepare commit
+      - name: Prepare Commit
         if: env.APPLY_FIXES_IF_COMMIT == 'true'
         run: sudo chown -Rc $UID .git/
 
-      - name: Commit and push applied linter fixes
+      - name: Commit and Push Applied Linter Fixes
         if: env.APPLY_FIXES_IF_COMMIT == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

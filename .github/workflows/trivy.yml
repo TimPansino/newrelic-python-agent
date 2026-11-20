@@ -29,6 +29,7 @@ permissions:
 jobs:
   # Upload Trivy data
   trivy:
+    name: Scan for Vulnerabilities and Upload Results
     if: success() || failure() # Does not run on cancelled workflows
     runs-on: ubuntu-24.04
     permissions:
@@ -36,6 +37,12 @@ jobs:
       security-events: write # Upload SARIF results to code scanning
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2.22.4
+        with:
+          disable-sudo: true
+          egress-policy: audit
+
       # Git Checkout
       - name: Checkout Code
         uses: actions/checkout@v7.0.1
@@ -43,7 +50,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Run Trivy vulnerability scanner in repo mode
+      - name: Scan Repository on PR (Table)
         if: ${{ github.event_name == 'pull_request' }}
         uses: aquasecurity/trivy-action@v0.36.0
         with:
@@ -54,7 +61,7 @@ jobs:
           severity: "CRITICAL,HIGH,MEDIUM,LOW"
           trivyignores: ".github/.trivyignore"
 
-      - name: Run Trivy vulnerability scanner in repo mode
+      - name: Scan Repository on Schedule (SARIF)
         if: ${{ github.event_name == 'schedule' }}
         uses: aquasecurity/trivy-action@v0.36.0
         with:
@@ -65,7 +72,7 @@ jobs:
           severity: "CRITICAL,HIGH,MEDIUM,LOW"
           trivyignores: ".github/.trivyignore"
 
-      - name: Upload Trivy scan results to GitHub Security tab
+      - name: Upload Scan Results to Security Tab
         if: ${{ github.event_name == 'schedule' }}
         uses: github/codeql-action/upload-sarif@v4.39.3
         with:

@@ -68,6 +68,12 @@ jobs:
     # Keep these steps in an isolated job so write access is only granted for the release lookup.
     # Add any future validation steps to the other jobs and not this one to keep permissions minimal.
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2.22.4
+        with:
+          disable-sudo: true
+          egress-policy: audit
+
       - name: Determine if Repository is a Fork or Official
         id: repo
         run: |
@@ -151,6 +157,12 @@ jobs:
       tag_exists: ${{ steps.existing.outputs.tag_exists }}
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2.22.4
+        with:
+          disable-sudo: true
+          egress-policy: audit
+
       # Validates deployment target only for the Deploy workflow.
       # Only pypi is allowed on the official repo, and only testpypi or github-only on forks.
       - name: Validate Deployment Target
@@ -189,12 +201,14 @@ jobs:
           REF_TYPE: ${{ github.ref_type }}
           REF_NAME: ${{ github.ref_name }}
 
-      - uses: actions/checkout@v7.0.1
+      - name: Checkout Code
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0 # Fetch main and the latest release tag to compare against
 
-      - uses: actions/setup-python@v7.1.0
+      - name: Set Up Python
+        uses: actions/setup-python@v7.1.0
         with:
           python-version: "3.14"
 

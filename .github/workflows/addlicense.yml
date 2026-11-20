@@ -32,6 +32,7 @@ concurrency:
 jobs:
   # Tests
   addlicense:
+    name: Check License Headers
     runs-on: ubuntu-22.04
     container:
       image: ghcr.io/newrelic/newrelic-python-agent-ci:latest # zizmor: ignore[unpinned-images]
@@ -39,11 +40,18 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v7.0.1
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2.22.4
+        with:
+          disable-sudo: true
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
 
-      - name: Fetch git tags
+      - name: Fetch Git Tags
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git fetch --tags origin

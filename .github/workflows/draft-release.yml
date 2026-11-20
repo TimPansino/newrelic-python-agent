@@ -56,6 +56,12 @@ jobs:
       contents: write # Create the tag and the draft release
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2.22.4
+        with:
+          disable-sudo: true
+          egress-policy: audit
+
       # A draft release does not create its tag until published, so create it explicitly.
       - name: Create Release Tag
         if: needs.validate-release.outputs.tag_exists != 'true'
